@@ -4,7 +4,7 @@
 import os
 import sys
 import pickle
-import json
+import csv
 
 from pyqtgraph    import LabelItem
 from pyqtgraph.Qt import QtGui, QtWidgets, QtCore
@@ -166,15 +166,18 @@ class Window(QtGui.QMainWindow):
 
 
     def exportLabelDialog(self):
-        path_json, is_ok = QtGui.QFileDialog.getSaveFileName(self, 'Save File', f'{self.timestamp}.label.json')
-
-        res_export_dict = { f"{k_idx}, {k_fl}" : v for (k_idx, k_fl), v in self.data_manager.res_dict.items() }
+        path_csv, is_ok = QtGui.QFileDialog.getSaveFileName(self, 'Save File', f'{self.timestamp}.label.csv')
 
         if is_ok:
-            # Write a new json file
-            with open(path_json,'w') as fh:
-                json.dump(res_export_dict, fh)
-                print(f"{path_json} has been updated.")
+            # Write a new csv file
+            with open(path_csv,'w') as fh:
+                fieldnames = ["seqi", "path", "label"]
+                csv_writer = csv.DictWriter(fh, fieldnames = fieldnames)
+
+                csv_writer.writeheader()
+                for (k_idx, k_fl), v in self.data_manager.res_dict.items():
+                    csv_writer.writerow({ "seqi" : k_idx, "path" : k_fl, "label" : v })
+                print(f"{path_csv} has been updated.")
 
         return None
 
