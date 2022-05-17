@@ -26,6 +26,8 @@ class Window(QtGui.QMainWindow):
         self.num_cxi = len(self.data_manager.path_cxi_list)
 
         self.idx_cxi = 0
+        self.is_filter_enabled = False
+        self.idx_filtered_dict = {}
 
         self.setupButtonFunction()
         self.setupButtonShortcut()
@@ -44,8 +46,8 @@ class Window(QtGui.QMainWindow):
 
 
     def setupButtonFunction(self):
-        self.layout.btn_next_cxi.clicked.connect(self.nextQry)
-        self.layout.btn_prev_cxi.clicked.connect(self.prevQry)
+        self.layout.btn_next_cxi.clicked.connect(self.nextCXI)
+        self.layout.btn_prev_cxi.clicked.connect(self.prevCXI)
         self.layout.btn_label.clicked.connect(self.labelCXI)
 
         return None
@@ -86,15 +88,23 @@ class Window(QtGui.QMainWindow):
     ##################
     ### NAVIGATION ###
     ##################
-    def nextQry(self):
-        self.idx_cxi = min(self.num_cxi - 1, self.idx_cxi + 1)    # Right bound
+    def nextCXI(self):
+        if self.is_filter_enabled:
+            self.idx_cxi = self.idx_filtered_dict[self.idx_cxi]["next"]
+        else:
+            self.idx_cxi = min(self.num_cxi - 1, self.idx_cxi + 1)    # Right bound
+
         self.dispImg()
 
         return None
 
 
-    def prevQry(self):
-        self.idx_cxi = max(0, self.idx_cxi - 1)    # Left bound
+    def prevCXI(self):
+        if self.is_filter_enabled:
+            self.idx_cxi = self.idx_filtered_dict[self.idx_cxi]["prev"]
+        else:
+            self.idx_cxi = max(0, self.idx_cxi - 1)    # Left bound
+
         self.dispImg()
 
         return None
@@ -107,16 +117,18 @@ class Window(QtGui.QMainWindow):
         # Process the OK event
         if is_ok and len(label_str) > 0:
             fl_cxi = self.data_manager.path_cxi_list[self.idx_cxi][0]
-            self.data_manager.res_dict[fl_cxi] = label_str
 
-            print(f"{fl_cxi} has a label: {label_str}.")
+            k = (self.idx_cxi, fl_cxi)
+            self.data_manager.res_dict[k] = label_str
+
+            print(f"{self.idx_cxi}, {fl_cxi} has a label: {label_str}.")
 
         return None
 
 
-    #################################
-    ### SAVE AND RESTORE PROGRESS ###
-    #################################
+    ################
+    ### MENU BAR ###
+    ################
     def saveStateDialog(self):
         path_pickle, is_ok = QtGui.QFileDialog.getSaveFileName(self, 'Save File', f'{self.timestamp}.pickle')
 
@@ -155,10 +167,12 @@ class Window(QtGui.QMainWindow):
     def exportLabelDialog(self):
         path_json, is_ok = QtGui.QFileDialog.getSaveFileName(self, 'Save File', f'{self.timestamp}.label.json')
 
+        res_export_dict = { f"{k_idx}, {k_fl}" : v for (k_idx, k_fl), v in self.data_manager.res_dict.items() }
+
         if is_ok:
             # Write a new json file
             with open(path_json,'w') as fh:
-                json.dump(self.data_manager.res_dict, fh)
+                json.dump(res_export_dict, fh)
                 print(f"{path_json} has been updated.")
 
         return None
@@ -174,6 +188,48 @@ class Window(QtGui.QMainWindow):
             self.idx_cxi = min(max(0, self.idx_cxi), self.num_cxi - 1)
 
             self.dispImg()
+
+        return None
+
+
+    def enableFilter(self):
+        label_str, is_ok = QtGui.QInputDialog.getText(self, "Enable filtering model", "What's the label to filter")
+
+        idx_filtered_dict = {}
+        if is_ok:
+            # Find all indices associated to one label...
+            idx_filtered_list = sorted([ int(k_idx) for (k_idx, k_fl), v in self.data_manager.res_dict.items() if v == label_str ])
+
+            # Build up a lookup table for quickly accessing the filtered next/prev event number
+            for i, v in enumerate(idx_filtered_list):
+                idx_filtered_dict[v] = { "prev" : idx_filtered_list[max(0, i - 1)],
+                                         "next" : idx_filtered_list[min(len(idx_filtered_list) - 1, i + 1)] }
+
+            if idx_filtered_list:
+                # Confirm availability of filtered events...
+                self.is_filter_enabled = True
+
+                # Allow rollover on both ends...
+                end_left = idx_filtered_list[0]
+                end_rght = idx_filtered_list[-1]
+                idx_filtered_dict[end_left]["prev"] = end_rght
+                idx_filtered_dict[end_rght]["next"] = end_left
+
+                # Save the filtered record...
+                self.idx_filtered_dict = idx_filtered_dict
+
+                # Start to display it...
+                self.idx_cxi = idx_filtered_list[0]
+                self.dispImg()
+            else:
+                print("Warning!!! There is no images with label '{label_str}'.".format( label_str = label_str ))
+
+        return None
+
+
+    def disableFilter(self):
+        self.is_filter_enabled = False
+        self.idx_filtered_dict = {}
 
         return None
 
@@ -195,6 +251,13 @@ class Window(QtGui.QMainWindow):
 
         goMenu.addAction(self.goAction)
 
+        # Filter menu
+        filterMenu = QtWidgets.QMenu("&Filter", self)
+        menuBar.addMenu(filterMenu)
+
+        filterMenu.addAction(self.filterEnableAction)
+        filterMenu.addAction(self.filterDisableAction)
+
         return None
 
 
@@ -211,6 +274,12 @@ class Window(QtGui.QMainWindow):
         self.goAction = QtWidgets.QAction(self)
         self.goAction.setText("&Event")
 
+        self.filterEnableAction = QtWidgets.QAction(self)
+        self.filterEnableAction.setText("&Enable")
+
+        self.filterDisableAction = QtWidgets.QAction(self)
+        self.filterDisableAction.setText("&Disable")
+
         return None
 
 
@@ -220,5 +289,8 @@ class Window(QtGui.QMainWindow):
         self.loadAction.triggered.connect(self.loadStateDialog)
 
         self.goAction.triggered.connect(self.goEventDialog)
+
+        self.filterEnableAction.triggered.connect(self.enableFilter)
+        self.filterDisableAction.triggered.connect(self.disableFilter)
 
         return None
