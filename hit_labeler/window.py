@@ -80,7 +80,7 @@ class Window(QtGui.QMainWindow):
         self.layout.viewer_cxi.getView().autoRange()
 
         # Display title...
-        self.layout.viewer_cxi.getView().setTitle(f"Sequence number: {self.idx_cxi + 1}/{self.num_cxi}")
+        self.layout.viewer_cxi.getView().setTitle(f"Sequence number: {self.idx_cxi}/{self.num_cxi - 1}")
 
         return None
 
@@ -159,6 +159,7 @@ class Window(QtGui.QMainWindow):
                 self.idx_cxi                     = obj_saved[3]
                 self.timestamp                   = obj_saved[4]
 
+            self.disableFilter()
             self.dispImg()
 
         return None
@@ -182,7 +183,7 @@ class Window(QtGui.QMainWindow):
         idx, is_ok = QtGui.QInputDialog.getText(self, "Enter the event number to go", "Enter the event number to go")
 
         if is_ok:
-            self.idx_cxi = int(idx) - 1    # seqi to python 0-based idx
+            self.idx_cxi = int(idx)
 
             # Bound idx within a reasonable range
             self.idx_cxi = min(max(0, self.idx_cxi), self.num_cxi - 1)
