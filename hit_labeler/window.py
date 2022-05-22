@@ -20,7 +20,7 @@ class Window(QtGui.QMainWindow):
         self.layout       = layout
         self.data_manager = data_manager
 
-        self.timestamp = self.data_manager.get_timestamp()
+        self.timestamp = self.data_manager.timestamp
         self.username  = self.data_manager.username
 
         self.num_cxi = len(self.data_manager.path_cxi_list)

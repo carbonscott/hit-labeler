@@ -25,6 +25,8 @@ class DataManager:
         self.img_state_dict = {}
         self.res_dict = {}
 
+        self.timestamp = self.get_timestamp()
+
         set_seed(self.seed)
 
         self.load_cxi_handler()
