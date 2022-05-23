@@ -23,3 +23,10 @@ numpy
 - `P`: prev query image
 - `L`: label an image
 - `G`: go to a specific image
+
+
+## TODO
+
+- [ ] Supports overwriting labels from a label file (e.g. csv).  
+- [ ] Consider integrating `.xtc`, otherwise keep using `.cxi`.  `psana`
+  converts raw `.xtc` into `.cxi`, so maybe it doesn't need to be integrated.  
