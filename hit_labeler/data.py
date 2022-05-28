@@ -11,25 +11,13 @@ from datetime import datetime
 from hit_labeler.utils  import set_seed
 
 class DataManager:
-    def __init__(self, config_data):
+    def __init__(self):
         super().__init__()
 
-        # Imported variables...
-        self.path_csv = config_data.path_csv
-        self.drc_root = config_data.drc_root
-        self.username = config_data.username
-        self.seed     = config_data.seed
-
         # Internal variables...
-        self.path_cxi_list = []
         self.img_state_dict = {}
-        self.res_dict = {}
 
         self.timestamp = self.get_timestamp()
-
-        set_seed(self.seed)
-
-        self.load_cxi_handler()
 
         self.state_random = [random.getstate(), np.random.get_state()]
 
@@ -41,6 +29,43 @@ class DataManager:
         timestamp = now.strftime("%Y_%m%d_%H%M_%S")
 
         return timestamp
+
+
+    def save_random_state(self):
+        self.state_random = (random.getstate(), np.random.get_state())
+
+        return None
+
+
+    def set_random_state(self):
+        state_random, state_numpy = self.state_random
+        random.setstate(state_random)
+        np.random.set_state(state_numpy)
+
+        return None
+
+
+
+
+class CxiManager(DataManager):
+
+    def __init__(self, config_data):
+        super().__init__()
+
+        # Imported variables...
+        self.path_csv = config_data.path_csv
+        self.drc_root = config_data.drc_root
+        self.username = config_data.username
+        self.seed     = config_data.seed
+
+        # Internal variables...
+        self.path_cxi_list = []
+
+        set_seed(self.seed)
+
+        self.load_cxi_handler()
+
+        return None
 
 
     def load_cxi_handler(self):
@@ -74,17 +99,3 @@ class DataManager:
         img = (img - np.mean(img)) / np.std(img)
 
         return img
-
-
-    def save_random_state(self):
-        self.state_random = (random.getstate(), np.random.get_state())
-
-        return None
-
-
-    def set_random_state(self):
-        state_random, state_numpy = self.state_random
-        random.setstate(state_random)
-        np.random.set_state(state_numpy)
-
-        return None
