@@ -15,10 +15,10 @@ class MainLayout(QtGui.QWidget):
         self.area      = DockArea()
         self.dock_dict = self.config_dock()
 
-        self.btn_prev_cxi, self.btn_next_cxi, self.btn_label = self.config_button_cxi()
+        self.btn_prev_img, self.btn_next_img, self.btn_label = self.config_button_img()
 
         # Update images in child's class
-        self.viewer_cxi = self.config_image_cxi()
+        self.viewer_img = self.config_image()
 
         return None
 
@@ -45,7 +45,7 @@ class MainLayout(QtGui.QWidget):
         return dock_dict
 
 
-    def config_status_cxi(self):
+    def config_status_img(self):
         # Biolerplate code to start widget config
         wdgt = LayoutWidget()
 
@@ -58,7 +58,7 @@ class MainLayout(QtGui.QWidget):
         return label
 
 
-    def config_button_cxi(self):
+    def config_button_img(self):
         ''' Dock of ImgQry displays one image, three buttons, and one status.
         '''
         # Biolerplate code to start widget config
@@ -78,8 +78,8 @@ class MainLayout(QtGui.QWidget):
         return btn_prev, btn_next, btn_label
 
 
-    def config_image_cxi(self):
-        ''' Display cxi image.
+    def config_image(self):
+        ''' Display image.
         '''
         # Biolerplate code to start widget config
         wdgt = ImageView(view = PlotItem())
