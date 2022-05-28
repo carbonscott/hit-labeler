@@ -23,9 +23,9 @@ class Window(QtGui.QMainWindow):
         self.timestamp = self.data_manager.timestamp
         self.username  = self.data_manager.username
 
-        self.num_cxi = len(self.data_manager.path_cxi_list)
+        self.num_img = len(self.data_manager.path_img_list)
 
-        self.idx_cxi = 0
+        self.idx_img = 0
         self.is_filter_enabled = False
         self.idx_filtered_dict = {}
 
@@ -46,17 +46,17 @@ class Window(QtGui.QMainWindow):
 
 
     def setupButtonFunction(self):
-        self.layout.btn_next_cxi.clicked.connect(self.nextCXI)
-        self.layout.btn_prev_cxi.clicked.connect(self.prevCXI)
-        self.layout.btn_label.clicked.connect(self.labelCXI)
+        self.layout.btn_next_img.clicked.connect(self.nextImg)
+        self.layout.btn_prev_img.clicked.connect(self.prevImg)
+        self.layout.btn_label.clicked.connect(self.labelImg)
 
         return None
 
 
     def setupButtonShortcut(self):
         # w/ buttons
-        self.layout.btn_next_cxi.setShortcut("N")
-        self.layout.btn_prev_cxi.setShortcut("P")
+        self.layout.btn_next_img.setShortcut("N")
+        self.layout.btn_prev_img.setShortcut("P")
         self.layout.btn_label.setShortcut("L")
 
         # w/o buttons
@@ -69,18 +69,18 @@ class Window(QtGui.QMainWindow):
     ### DIPSLAY ###
     ###############
     def dispImg(self):
-        # Let idx_cxi bound within reasonable range....
-        self.idx_cxi = min(max(0, self.idx_cxi), self.num_cxi - 1)
+        # Let idx_img bound within reasonable range....
+        self.idx_img = min(max(0, self.idx_img), self.num_img - 1)
 
-        img_cxi = self.data_manager.get_img(self.idx_cxi)
+        img = self.data_manager.get_img(self.idx_img)
 
         # Display images...
-        self.layout.viewer_cxi.setImage(img_cxi, levels = [0, 1])
-        self.layout.viewer_cxi.setHistogramRange(0, 1)
-        self.layout.viewer_cxi.getView().autoRange()
+        self.layout.viewer_img.setImage(img, levels = [0, 1])
+        self.layout.viewer_img.setHistogramRange(0, 1)
+        self.layout.viewer_img.getView().autoRange()
 
         # Display title...
-        self.layout.viewer_cxi.getView().setTitle(f"Sequence number: {self.idx_cxi}/{self.num_cxi - 1}")
+        self.layout.viewer_img.getView().setTitle(f"Sequence number: {self.idx_img}/{self.num_img - 1}")
 
         return None
 
@@ -88,40 +88,40 @@ class Window(QtGui.QMainWindow):
     ##################
     ### NAVIGATION ###
     ##################
-    def nextCXI(self):
+    def nextImg(self):
         if self.is_filter_enabled:
-            self.idx_cxi = self.idx_filtered_dict[self.idx_cxi]["next"]
+            self.idx_img = self.idx_filtered_dict[self.idx_img]["next"]
         else:
-            self.idx_cxi = min(self.num_cxi - 1, self.idx_cxi + 1)    # Right bound
+            self.idx_img = min(self.num_img - 1, self.idx_img + 1)    # Right bound
 
         self.dispImg()
 
         return None
 
 
-    def prevCXI(self):
+    def prevImg(self):
         if self.is_filter_enabled:
-            self.idx_cxi = self.idx_filtered_dict[self.idx_cxi]["prev"]
+            self.idx_img = self.idx_filtered_dict[self.idx_img]["prev"]
         else:
-            self.idx_cxi = max(0, self.idx_cxi - 1)    # Left bound
+            self.idx_img = max(0, self.idx_img - 1)    # Left bound
 
         self.dispImg()
 
         return None
 
 
-    def labelCXI(self):
+    def labelImg(self):
         # Fetch label from the GUI user prompt
         label_str, is_ok = QtGui.QInputDialog.getText(self, "Enter new label", "Enter new label")
 
         # Process the OK event
         if is_ok and len(label_str) > 0:
-            fl_cxi = self.data_manager.path_cxi_list[self.idx_cxi][0]
+            fl_img = self.data_manager.path_img_list[self.idx_img][0]
 
-            k = (self.idx_cxi, fl_cxi)
+            k = (self.idx_img, fl_img)
             self.data_manager.res_dict[k] = label_str
 
-            print(f"{self.idx_cxi}, {fl_cxi} has a label: {label_str}.")
+            print(f"{self.idx_img}, {fl_img} has a label: {label_str}.")
 
         return None
 
@@ -133,10 +133,10 @@ class Window(QtGui.QMainWindow):
         path_pickle, is_ok = QtGui.QFileDialog.getSaveFileName(self, 'Save File', f'{self.timestamp}.pickle')
 
         if is_ok:
-            obj_to_save = ( self.data_manager.path_cxi_list,
+            obj_to_save = ( self.data_manager.path_img_list,
                             self.data_manager.state_random,
                             self.data_manager.res_dict,
-                            self.idx_cxi,
+                            self.idx_img,
                             self.timestamp )
 
             with open(path_pickle, 'wb') as fh:
@@ -153,10 +153,10 @@ class Window(QtGui.QMainWindow):
         if os.path.exists(path_pickle):
             with open(path_pickle, 'rb') as fh:
                 obj_saved = pickle.load(fh)
-                self.data_manager.path_cxi_list  = obj_saved[0]
+                self.data_manager.path_img_list  = obj_saved[0]
                 self.data_manager.state_random   = obj_saved[1]
                 self.data_manager.res_dict       = obj_saved[2]
-                self.idx_cxi                     = obj_saved[3]
+                self.idx_img                     = obj_saved[3]
                 self.timestamp                   = obj_saved[4]
 
             self.disableFilter()
@@ -186,10 +186,10 @@ class Window(QtGui.QMainWindow):
         idx, is_ok = QtGui.QInputDialog.getText(self, "Enter the event number to go", "Enter the event number to go")
 
         if is_ok:
-            self.idx_cxi = int(idx)
+            self.idx_img = int(idx)
 
             # Bound idx within a reasonable range
-            self.idx_cxi = min(max(0, self.idx_cxi), self.num_cxi - 1)
+            self.idx_img = min(max(0, self.idx_img), self.num_img - 1)
 
             self.dispImg()
 
@@ -223,7 +223,7 @@ class Window(QtGui.QMainWindow):
                 self.idx_filtered_dict = idx_filtered_dict
 
                 # Start to display it...
-                self.idx_cxi = idx_filtered_list[0]
+                self.idx_img = idx_filtered_list[0]
                 self.dispImg()
             else:
                 print("Warning!!! There is no images with label '{label_str}'.".format( label_str = label_str ))
