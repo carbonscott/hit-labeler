@@ -8,7 +8,7 @@ from pyqtgraph.Qt import QtGui
 
 from hit_labeler.layout import MainLayout
 from hit_labeler.window import Window
-from hit_labeler.data   import DataManager
+from hit_labeler.data   import PsanaManager
 
 import socket
 
@@ -21,7 +21,7 @@ def run(config_data):
     layout = MainLayout()
 
     # Data
-    data_manager = DataManager(config_data)
+    data_manager = PsanaManager(config_data)
 
     # Window
     win = Window(layout, data_manager)
@@ -36,9 +36,10 @@ class ConfigData:
         self.kwargs = kwargs
         for k, v in kwargs.items(): setattr(self, k, v)
 
-config_data = ConfigData( path_csv   = "/reg/data/ana03/scratch/cwang31/amo10510/cxi_list.csv",
-                          drc_root   = "/reg/data/ana03/scratch/cwang31/amo10510/",
-                          username   = os.environ.get('USER'),
-                          seed       = 0, )
+config_data = ConfigData( path_csv = "/reg/data/ana03/scratch/cwang31/spi/labels/2022_0518_1827_35.auto.label.csv",
+                          username = os.environ.get('USER'),
+                          mode     = "idx",
+                          detector = "pnccdFront",
+                          seed     = 0, )
 
 run(config_data)
