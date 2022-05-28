@@ -27,6 +27,7 @@ class Window(QtGui.QMainWindow):
 
         self.idx_img = 0
         self.is_filter_enabled = False
+        self.idx_filtered_list = {}
         self.idx_filtered_dict = {}
 
         self.setupButtonFunction()
@@ -90,7 +91,15 @@ class Window(QtGui.QMainWindow):
     ##################
     def nextImg(self):
         if self.is_filter_enabled:
-            self.idx_img = self.idx_filtered_dict[self.idx_img]["next"]
+            # If the current image has the filtered label???
+            if self.idx_img in self.idx_filtered_dict:
+                self.idx_img = self.idx_filtered_dict[self.idx_img]["next"]
+
+            # Otherwise, find the nearest next event or revert to the initial event...
+            else:
+                try: idx_nearest_next = next(filter(lambda x: x > self.idx_img, self.idx_filtered_list))
+                except StopIteration: idx_nearest_next = self.idx_filtered_list[0]
+                self.idx_img = idx_nearest_next
         else:
             self.idx_img = min(self.num_img - 1, self.idx_img + 1)    # Right bound
 
@@ -100,12 +109,24 @@ class Window(QtGui.QMainWindow):
 
 
     def prevImg(self):
+        idx_img_current = self.idx_img
+
         if self.is_filter_enabled:
-            self.idx_img = self.idx_filtered_dict[self.idx_img]["prev"]
+            # If the current image has the filtered label???
+            if self.idx_img in self.idx_filtered_dict:
+                self.idx_img = self.idx_filtered_dict[self.idx_img]["prev"]
+
+            # Otherwise, find the nearest prev event or revert to the initial event...
+            else:
+                try: idx_nearest_prev = next(filter(lambda x: x > self.idx_img, reversed(self.idx_filtered_list)))
+                except StopIteration: idx_nearest_prev = self.idx_filtered_list[-1]
+                self.idx_img = idx_nearest_prev
         else:
             self.idx_img = max(0, self.idx_img - 1)    # Left bound
 
-        self.dispImg()
+        # Update image only when next/prev event is found???
+        if idx_img_current != self.idx_img:
+            self.dispImg()
 
         return None
 
@@ -199,6 +220,7 @@ class Window(QtGui.QMainWindow):
     def enableFilter(self):
         label_str, is_ok = QtGui.QInputDialog.getText(self, "Enable filtering model", "What's the label to filter")
 
+        idx_filtered_list = []
         idx_filtered_dict = {}
         if is_ok:
             # Find all indices associated to one label...
@@ -220,6 +242,7 @@ class Window(QtGui.QMainWindow):
                 idx_filtered_dict[end_rght]["next"] = end_left
 
                 # Save the filtered record...
+                self.idx_filtered_list = idx_filtered_list
                 self.idx_filtered_dict = idx_filtered_dict
 
                 # Start to display it...
