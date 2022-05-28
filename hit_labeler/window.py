@@ -101,7 +101,9 @@ class Window(QtGui.QMainWindow):
                 except StopIteration: idx_nearest_next = self.idx_filtered_list[0]
                 self.idx_img = idx_nearest_next
         else:
-            self.idx_img = min(self.num_img - 1, self.idx_img + 1)    # Right bound
+            # Support rollover...
+            idx_next = self.idx_img + 1
+            self.idx_img = idx_next if idx_next < self.num_img else 0
 
         self.dispImg()
 
@@ -122,7 +124,9 @@ class Window(QtGui.QMainWindow):
                 except StopIteration: idx_nearest_prev = self.idx_filtered_list[-1]
                 self.idx_img = idx_nearest_prev
         else:
-            self.idx_img = max(0, self.idx_img - 1)    # Left bound
+            # Support rollover...
+            idx_prev = self.idx_img - 1
+            self.idx_img = idx_prev if -1 < idx_prev else self.num_img - 1
 
         # Update image only when next/prev event is found???
         if idx_img_current != self.idx_img:
