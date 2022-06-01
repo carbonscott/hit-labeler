@@ -54,10 +54,10 @@ class CxiManager(DataManager):
         super().__init__()
 
         # Imported variables...
-        self.path_csv = config_data.path_csv
-        self.drc_root = config_data.drc_root
-        self.username = config_data.username
-        self.seed     = config_data.seed
+        self.path_csv = getattr(config_data, 'path_csv', None)
+        self.drc_root = getattr(config_data, 'drc_root', None)
+        self.username = getattr(config_data, 'username', None)
+        self.seed     = getattr(config_data, 'seed'    , None)
 
         # Internal variables...
         self.path_img_list = []
@@ -110,11 +110,12 @@ class PsanaManager(DataManager):
         super().__init__()
 
         # Imported variables...
-        self.path_csv = config_data.path_csv
-        self.mode     = config_data.mode
-        self.detector = config_data.detector
-        self.username = config_data.username
-        self.seed     = config_data.seed
+        self.path_csv = getattr(config_data, 'path_csv', None)
+        self.mode     = getattr(config_data, 'mode'    , None)
+        self.detector = getattr(config_data, 'detector', None)
+        self.username = getattr(config_data, 'username', None)
+        self.seed     = getattr(config_data, 'seed'    , None)
+        self.trans    = getattr(config_data, 'trans'   , None)
 
         # Internal variables...
         self.path_img_list = []
@@ -163,6 +164,9 @@ class PsanaManager(DataManager):
             self.psana_imgreader_dict[basename] = psana_imgreader
 
         img = self.psana_imgreader_dict[basename].get(int(event_num), mode = 'image')
+
+        # Apply any possible transformation...
+        if self.trans is not None: img = self.trans(img)
 
         # Save random state...
         # Might not be useful for this labeler
