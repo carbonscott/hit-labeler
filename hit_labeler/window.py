@@ -22,8 +22,9 @@ class Window(QtGui.QMainWindow):
 
         self.timestamp = self.data_manager.timestamp
         self.username  = self.data_manager.username
+        self.MANAGER   = self.data_manager.MANAGER
 
-        self.num_img = len(self.data_manager.path_img_list)
+        self.num_img = len(self.data_manager.img_tag_list)
 
         self.idx_img = 0
         self.is_filter_enabled = False
@@ -135,18 +136,40 @@ class Window(QtGui.QMainWindow):
         return None
 
 
+    def labelCXIImg(self, label_str):
+        fl_img = self.data_manager.img_tag_list[self.idx_img][0]
+
+        k = (self.idx_img, fl_img)
+        self.data_manager.res_dict[k] = label_str
+
+        print(f"{self.idx_img}, {fl_img} has a label: {label_str}.")
+
+        return None
+
+
+    def labelPsanaImg(self, label_str):
+        img_tag = self.data_manager.img_tag_list[self.idx_img]
+
+        k = (self.idx_img, img_tag)
+        self.data_manager.res_dict[k] = label_str
+
+        print(f"{self.idx_img}, {img_tag} has a label: {label_str}.")
+
+        return None
+
+
     def labelImg(self):
         # Fetch label from the GUI user prompt
         label_str, is_ok = QtGui.QInputDialog.getText(self, "Enter new label", "Enter new label")
 
         # Process the OK event
         if is_ok and len(label_str) > 0:
-            fl_img = self.data_manager.path_img_list[self.idx_img][0]
-
-            k = (self.idx_img, fl_img)
-            self.data_manager.res_dict[k] = label_str
-
-            print(f"{self.idx_img}, {fl_img} has a label: {label_str}.")
+            label_img_option = self.MANAGER
+            label_img_dict = { 
+                'cxi'   : self.labelCXIImg,
+                'psana' : self.labelPsanaImg,
+            }
+            label_img_dict[label_img_option](label_str)
 
         return None
 
@@ -158,7 +181,7 @@ class Window(QtGui.QMainWindow):
         path_pickle, is_ok = QtGui.QFileDialog.getSaveFileName(self, 'Save File', f'{self.timestamp}.pickle')
 
         if is_ok:
-            obj_to_save = ( self.data_manager.path_img_list,
+            obj_to_save = ( self.data_manager.img_tag_list,
                             self.data_manager.state_random,
                             self.data_manager.res_dict,
                             self.idx_img,
@@ -178,7 +201,7 @@ class Window(QtGui.QMainWindow):
         if os.path.exists(path_pickle):
             with open(path_pickle, 'rb') as fh:
                 obj_saved = pickle.load(fh)
-                self.data_manager.path_img_list  = obj_saved[0]
+                self.data_manager.img_tag_list  = obj_saved[0]
                 self.data_manager.state_random   = obj_saved[1]
                 self.data_manager.res_dict       = obj_saved[2]
                 self.idx_img                     = obj_saved[3]
@@ -190,19 +213,47 @@ class Window(QtGui.QMainWindow):
         return None
 
 
+    def exportCXILabel(self, path_csv):
+        # Write a new csv file
+        with open(path_csv,'w') as fh:
+            fieldnames = ["seqi", "path", "label"]
+            csv_writer = csv.DictWriter(fh, fieldnames = fieldnames)
+
+            csv_writer.writeheader()
+            for (k_idx, k_fl), v in self.data_manager.res_dict.items():
+                csv_writer.writerow({ "seqi" : k_idx, "path" : k_fl, "label" : v })
+            print(f"{path_csv} has been updated.")
+
+        return None
+
+
+
+    def exportPsanaLabel(self, path_csv):
+        # Write a new csv file
+        with open(path_csv,'w') as fh:
+            fieldnames = ["exp", "run", "event_num", "label"]
+            csv_writer = csv.writer(fh)
+            csv_writer.writerow(fieldnames)
+
+            for (_, tag_img), label in self.data_manager.res_dict.items():
+                exp, run, event_num = tag_img
+                csv_writer.writerow([exp, run, event_num, label])
+            print(f"{path_csv} has been updated.")
+
+        return None
+
+
+
     def exportLabelDialog(self):
         path_csv, is_ok = QtGui.QFileDialog.getSaveFileName(self, 'Save File', f'{self.timestamp}.label.csv')
 
         if is_ok:
-            # Write a new csv file
-            with open(path_csv,'w') as fh:
-                fieldnames = ["seqi", "path", "label"]
-                csv_writer = csv.DictWriter(fh, fieldnames = fieldnames)
-
-                csv_writer.writeheader()
-                for (k_idx, k_fl), v in self.data_manager.res_dict.items():
-                    csv_writer.writerow({ "seqi" : k_idx, "path" : k_fl, "label" : v })
-                print(f"{path_csv} has been updated.")
+            export_option = self.MANAGER
+            export_label_dict = { 
+                'cxi'   : self.exportCXILabel,
+                'psana' : self.exportPsanaLabel,
+            }
+            export_label_dict[export_option](path_csv)
 
         return None
 

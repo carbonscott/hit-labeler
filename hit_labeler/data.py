@@ -60,7 +60,8 @@ class CxiManager(DataManager):
         self.seed     = getattr(config_data, 'seed'    , None)
 
         # Internal variables...
-        self.path_img_list = []
+        self.img_tag_list = []
+        self.MANAGER = 'cxi'
 
         set_seed(self.seed)
 
@@ -74,13 +75,13 @@ class CxiManager(DataManager):
             lines = csv.reader(fh)
             next(lines)
             for i, path_cxi in enumerate(lines):
-                self.path_img_list.append(path_cxi)
+                self.img_tag_list.append(path_cxi)
 
         return None
 
 
     def get_img(self, idx):
-        fl_xtc   = self.path_img_list[idx][0]
+        fl_xtc   = self.img_tag_list[idx][0]
         path_xtc = os.path.join(self.drc_root, fl_xtc)
         with h5py.File(path_xtc, 'r') as fh:
             img0 = fh.get('entry_1/data_3/data')[()]
@@ -118,7 +119,8 @@ class PsanaManager(DataManager):
         self.trans    = getattr(config_data, 'trans'   , None)
 
         # Internal variables...
-        self.path_img_list = []
+        self.img_tag_list = []
+        self.MANAGER = 'psana'
 
         self.psana_imgreader_dict = {}
         self.entry_list = []
@@ -142,11 +144,12 @@ class PsanaManager(DataManager):
             for i, line in enumerate(lines): 
                 self.entry_list.append(line)
 
-                tag_img = (' '.join(line), )
-                self.path_img_list.append(tag_img)
+                exp, run, event_num, label = line
+
+                tag_img = exp, int(run), int(event_num)
+                self.img_tag_list.append(tag_img)
 
                 k = (i, tag_img)
-                label = line[-1]
                 self.res_dict[k] = label
 
         return None
