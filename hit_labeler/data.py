@@ -186,6 +186,28 @@ class PsanaManager(DataManager):
         return imgs_filtered
 
 
+    def get_panels(self, idx):
+        exp, run, event_num, label = self.entry_list[idx]
+
+        # Form a minimal basename to describe a dataset...
+        basename = (exp, run)
+
+        # Initiate image accessing layer...
+        if not basename in self.psana_imgreader_dict:
+            psana_imgreader = PsanaImg(exp, run, self.mode, self.detector)
+            self.psana_imgreader_dict[basename] = psana_imgreader
+
+        imgs = self.psana_imgreader_dict[basename].get(int(event_num), mode = 'calib')
+
+        # Filter images...
+        imgs = self.filter_panels(imgs)
+
+        # Apply any possible transformation...
+        if self.trans is not None: imgs = self.trans(imgs)
+
+        return imgs
+
+
     def get_mosaic(self, idx):
         exp, run, event_num, label = self.entry_list[idx]
 
