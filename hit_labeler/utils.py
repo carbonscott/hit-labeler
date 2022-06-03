@@ -149,7 +149,8 @@ class PsanaImg:
         assert mode in ("raw", "image", "calib"), f"Mode {mode} is not allowed!!!  Only 'raw' or 'image' are supported."
 
         # Fetch image data based on timestamp from detector...
-        read = { "image" : self.detector.image, }
+        read = { "image" : self.detector.image,
+                 "calib" : self.detector.calib }
         img = read[mode](event)
 
         return img
