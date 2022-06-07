@@ -1,6 +1,8 @@
-# Game of Hit
+# Hit labeler
 
-A GUI for labeling SPI hits.
+![](./figures/hit-labeler.png)
+
+A GUI for viewing/labeling SPI hits.
 
 
 ## Install with `pip`
@@ -27,6 +29,6 @@ numpy
 
 ## TODO
 
-- [ ] Supports overwriting labels from a label file (e.g. csv).  
+- [x] Supports overwriting labels from a label file (e.g. csv).  
 - [ ] Consider integrating `.xtc`, otherwise keep using `.cxi`.  `psana`
   converts raw `.xtc` into `.cxi`, so maybe it doesn't need to be integrated.  
