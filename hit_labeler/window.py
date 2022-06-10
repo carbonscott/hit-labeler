@@ -158,6 +158,17 @@ class Window(QtGui.QMainWindow):
         return None
 
 
+    def labelSkopiH5(self, label_str):
+        img_tag = self.data_manager.img_tag_list[self.idx_img]
+
+        k = (self.idx_img, img_tag)
+        self.data_manager.res_dict[k] = label_str
+
+        print(f"{self.idx_img}, {img_tag} has a label: {label_str}.")
+
+        return None
+
+
     def labelImg(self):
         # Fetch label from the GUI user prompt
         label_str, is_ok = QtGui.QInputDialog.getText(self, "Enter new label", "Enter new label")
@@ -166,8 +177,9 @@ class Window(QtGui.QMainWindow):
         if is_ok and len(label_str) > 0:
             label_img_option = self.MANAGER
             label_img_dict = { 
-                'cxi'   : self.labelCXIImg,
-                'psana' : self.labelPsanaImg,
+                'cxi'     : self.labelCXIImg,
+                'psana'   : self.labelPsanaImg,
+                'skopih5' : self.labelSkopiH5,
             }
             label_img_dict[label_img_option](label_str)
 
@@ -244,14 +256,31 @@ class Window(QtGui.QMainWindow):
 
 
 
+    def exportSkopiH5Label(self, path_csv):
+        # Write a new csv file
+        with open(path_csv,'w') as fh:
+            fieldnames = ["path_skopih5", "idx", "label"]
+            csv_writer = csv.writer(fh)
+            csv_writer.writerow(fieldnames)
+
+            for (_, tag_img), label in self.data_manager.res_dict.items():
+                path_skopih5, idx_img = tag_img
+                csv_writer.writerow([path_skopih5, idx_img, label])
+            print(f"{path_csv} has been updated.")
+
+        return None
+
+
+
     def exportLabelDialog(self):
         path_csv, is_ok = QtGui.QFileDialog.getSaveFileName(self, 'Save File', f'{self.timestamp}.label.csv')
 
         if is_ok:
             export_option = self.MANAGER
             export_label_dict = { 
-                'cxi'   : self.exportCXILabel,
-                'psana' : self.exportPsanaLabel,
+                'cxi'     : self.exportCXILabel,
+                'psana'   : self.exportPsanaLabel,
+                'skopih5' : self.exportSkopiH5Label,
             }
             export_label_dict[export_option](path_csv)
 
