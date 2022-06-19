@@ -137,7 +137,7 @@ class Window(QtGui.QMainWindow):
 
 
     def labelCXIImg(self, label_str):
-        img_tag = self.data_manager.img_tag_list[self.idx_img][0]
+        img_tag = self.data_manager.img_tag_list[self.idx_img]
 
         k = (self.idx_img, img_tag)
         self.data_manager.res_dict[k] = label_str
@@ -208,7 +208,7 @@ class Window(QtGui.QMainWindow):
 
 
     def loadStateDialog(self):
-        path_pickle = QtGui.QFileDialog.getOpenFileName(self, 'Save File')[0]
+        path_pickle = QtGui.QFileDialog.getOpenFileName(self, 'Open File')[0]
 
         if os.path.exists(path_pickle):
             with open(path_pickle, 'rb') as fh:
@@ -221,6 +221,59 @@ class Window(QtGui.QMainWindow):
 
             self.disableFilter()
             self.dispImg()
+
+        return None
+
+
+    def loadCXILabel(self, path_csv):
+        # Fetch all tag-label pairs...
+        img_label_dict = {}
+        with open(path_csv, 'r') as fh:
+            lines = csv.reader(fh)
+
+            # Skip the header...
+            next(lines)
+
+            # Read each line...
+            for line in lines:
+                seqi, img_tag, label = line
+
+                img_label_dict[img_tag] = label
+
+        # An intermediate step to locate key in res_dict...
+        img_tag_dict = {}
+        for i, img_tag in enumerate(self.data_manager.img_tag_list):
+            img_tag_dict[img_tag] = (i, img_tag)
+
+        # Update labels for existing tags...
+        for img_tag, label in img_label_dict.items():
+            # Form the key to look up label in res_dict...
+            k = img_tag_dict.get(img_tag, None)
+
+            # Assign new label...
+            if k is not None:
+                self.data_manager.res_dict[k] = label
+
+        return None
+
+
+    def loadPsanaLabel(self, path_csv): pass
+
+
+    def loadSkopiH5Label(self, path_csv): pass
+
+
+    def loadLabelDialog(self):
+        path_csv, is_ok = QtGui.QFileDialog.getOpenFileName(self, 'Load label file', f'{self.timestamp}.label.csv')
+
+        if is_ok:
+            load_option = self.MANAGER
+            load_label_dict = { 
+                'cxi'     : self.loadCXILabel,
+                'psana'   : self.loadPsanaLabel,
+                'skopih5' : self.loadSkopiH5Label,
+            }
+            load_label_dict[load_option](path_csv)
 
         return None
 
@@ -239,7 +292,6 @@ class Window(QtGui.QMainWindow):
         return None
 
 
-
     def exportPsanaLabel(self, path_csv):
         # Write a new csv file
         with open(path_csv,'w') as fh:
@@ -255,7 +307,6 @@ class Window(QtGui.QMainWindow):
         return None
 
 
-
     def exportSkopiH5Label(self, path_csv):
         # Write a new csv file
         with open(path_csv,'w') as fh:
@@ -269,7 +320,6 @@ class Window(QtGui.QMainWindow):
             print(f"{path_csv} has been updated.")
 
         return None
-
 
 
     def exportLabelDialog(self):
@@ -354,6 +404,7 @@ class Window(QtGui.QMainWindow):
 
         fileMenu.addAction(self.loadAction)
         fileMenu.addAction(self.saveAction)
+        fileMenu.addAction(self.loadLabelAction)
         fileMenu.addAction(self.exportLabelAction)
 
         # Go menu
@@ -379,6 +430,9 @@ class Window(QtGui.QMainWindow):
         self.saveAction = QtWidgets.QAction(self)
         self.saveAction.setText("&Save State")
 
+        self.loadLabelAction = QtWidgets.QAction(self)
+        self.loadLabelAction.setText("&Load Labels")
+
         self.exportLabelAction = QtWidgets.QAction(self)
         self.exportLabelAction.setText("&Export Labels")
 
@@ -395,9 +449,10 @@ class Window(QtGui.QMainWindow):
 
 
     def connectAction(self):
-        self.saveAction.triggered.connect(self.saveStateDialog)
-        self.exportLabelAction.triggered.connect(self.exportLabelDialog)
         self.loadAction.triggered.connect(self.loadStateDialog)
+        self.saveAction.triggered.connect(self.saveStateDialog)
+        self.loadLabelAction.triggered.connect(self.loadLabelDialog)
+        self.exportLabelAction.triggered.connect(self.exportLabelDialog)
 
         self.goAction.triggered.connect(self.goEventDialog)
 
