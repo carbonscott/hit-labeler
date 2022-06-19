@@ -74,14 +74,15 @@ class CxiManager(DataManager):
         with open(self.path_csv, 'r') as fh: 
             lines = csv.reader(fh)
             next(lines)
-            for i, path_cxi in enumerate(lines):
+            for i, line in enumerate(lines):
+                path_cxi = line[0]
                 self.img_tag_list.append(path_cxi)
 
         return None
 
 
     def get_img(self, idx):
-        fl_xtc   = self.img_tag_list[idx][0]
+        fl_xtc   = self.img_tag_list[idx]
         path_xtc = os.path.join(self.drc_root, fl_xtc)
         with h5py.File(path_xtc, 'r') as fh:
             img0 = fh.get('entry_1/data_3/data')[()]
