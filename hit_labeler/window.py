@@ -214,10 +214,10 @@ class Window(QtGui.QMainWindow):
             with open(path_pickle, 'rb') as fh:
                 obj_saved = pickle.load(fh)
                 self.data_manager.img_tag_list  = obj_saved[0]
-                self.data_manager.state_random   = obj_saved[1]
-                self.data_manager.res_dict       = obj_saved[2]
-                self.idx_img                     = obj_saved[3]
-                self.timestamp                   = obj_saved[4]
+                self.data_manager.state_random  = obj_saved[1]
+                self.data_manager.res_dict      = obj_saved[2]
+                self.idx_img                    = obj_saved[3]
+                self.timestamp                  = obj_saved[4]
 
             self.disableFilter()
             self.dispImg()
