@@ -137,12 +137,12 @@ class Window(QtGui.QMainWindow):
 
 
     def labelCXIImg(self, label_str):
-        fl_img = self.data_manager.img_tag_list[self.idx_img][0]
+        img_tag = self.data_manager.img_tag_list[self.idx_img][0]
 
-        k = (self.idx_img, fl_img)
+        k = (self.idx_img, img_tag)
         self.data_manager.res_dict[k] = label_str
 
-        print(f"{self.idx_img}, {fl_img} has a label: {label_str}.")
+        print(f"{self.idx_img}, {img_tag} has a label: {label_str}.")
 
         return None
 
