@@ -4,6 +4,7 @@
 import random
 import numpy as np
 import skimage.measure as sm
+import psana
 
 def set_seed(seed):
     random.seed(seed)
@@ -125,7 +126,6 @@ class PsanaImg:
     """
 
     def __init__(self, exp, run, mode, detector_name):
-        import psana
 
         # Biolerplate code to access an image
         # Set up data source
@@ -138,7 +138,7 @@ class PsanaImg:
         self.detector = psana.Detector(detector_name)
 
 
-    def get(self, event_num, mode = "image"):
+    def get(self, event_num, multipanel = None, mode = "image"):
         # Fetch the timestamp according to event number...
         timestamp = self.timestamps[int(event_num)]
 
@@ -151,6 +151,6 @@ class PsanaImg:
         # Fetch image data based on timestamp from detector...
         read = { "image" : self.detector.image,
                  "calib" : self.detector.calib }
-        img = read[mode](event)
+        img = read[mode](event) if multipanel is None else read[mode](event, multipanel)
 
         return img
