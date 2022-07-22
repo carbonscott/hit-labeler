@@ -349,7 +349,7 @@ class SkopiH5Manager(DataManager):
         super().__init__()
 
         # Imported variables...
-        self.path_cxi  = getattr(config_data, 'path_cxi' , None)
+        self.path_csv  = getattr(config_data, 'path_csv' , None)
         self.drc_root  = getattr(config_data, 'drc_root' , None)
         self.username  = getattr(config_data, 'username' , None)
         self.panels    = getattr(config_data, 'panels'   , None)
@@ -372,7 +372,7 @@ class SkopiH5Manager(DataManager):
 
     def load_skopih5_handler(self):
         counter = 0
-        with open(self.path_cxi, 'r') as fh: 
+        with open(self.path_csv, 'r') as fh: 
             lines = csv.reader(fh)
             next(lines)
             for i, (basename, label, drc) in enumerate(lines):
