@@ -8,7 +8,7 @@ from pyqtgraph.Qt import QtGui
 
 from hit_labeler.layout import MainLayout
 from hit_labeler.window import Window
-from hit_labeler.data   import SkopiH5Manager
+from hit_labeler.data   import CxiManager
 from hit_labeler.utils  import PsanaImg
 
 import socket
@@ -24,7 +24,7 @@ def run_app(config_data):
     layout = MainLayout()
 
     # Data
-    data_manager = SkopiH5Manager(config_data)
+    data_manager = CxiManager(config_data)
 
     ## # Data transformation
     ## img = data_manager.get_img(0)
@@ -56,10 +56,10 @@ psana_img = PsanaImg( exp           = exp,
                       mode          = mode,
                       detector_name = detector_name, )
 
-config_data = ConfigData( path_csv  = "/reg/data/ana03/scratch/cwang31/spi/simulated.pnccd_panel.v2.datasets.csv",
+config_data = ConfigData( ## path_cxi  = "/reg/data/ana03/scratch/cwang31/cxidb/amo06516/amo06516.cxi",
+                          path_cxi  = "/reg/data/ana03/scratch/cwang31/cxidb/amox34117/amox34117.cxi",
                           username  = os.environ.get('USER'),
                           seed      = 0,
-                          panels    = [0, 1, 2, 3],
                           trans     = None, 
                           psana_img = psana_img )
 ## config_data.psana_img = None
