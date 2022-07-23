@@ -181,7 +181,7 @@ class PsanaManager(DataManager):
         super().__init__()
 
         # Imported variables...
-        self.path_cxi = getattr(config_data, 'path_cxi', None)
+        self.path_csv = getattr(config_data, 'path_csv', None)
         self.mode     = getattr(config_data, 'mode'    , None)
         self.detector = getattr(config_data, 'detector', None)
         self.username = getattr(config_data, 'username', None)
@@ -211,7 +211,7 @@ class PsanaManager(DataManager):
 
     def load_imglabel_handler(self):
         # Read csv file of datasets...
-        with open(self.path_cxi, 'r') as fh: 
+        with open(self.path_csv, 'r') as fh: 
             lines = csv.reader(fh)
 
             # Skip the header...
